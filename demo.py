@@ -189,7 +189,14 @@ def validate_folder_path(folder_path):
 
     # 检查路径是否存在
     if not os.path.exists(folder_path):
-        return False, f"文件夹路径 '{folder_path}' 不存在."
+        try:
+            os.makedirs(folder_path)
+            return True, f"文件夹路径 '{folder_path}' 不存在，已成功创建."
+        except Exception as e:
+            return False, f"无法创建文件夹路径 '{folder_path}': {str(e)}"
+
+            #return False, f"文件夹路径 '{folder_path}' 已存在."
+        #return False, f"文件夹路径 '{folder_path}' 不存在."
 
     # 检查路径是否是文件夹
     if not os.path.isdir(folder_path):
