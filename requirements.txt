@@ -1,6 +1,7 @@
 torch==1.13.0
 torchaudio==0.3.0
 torchvision==0.4.2
+
 streamlit
 streamlit-lottie
 streamlit-option-menu
