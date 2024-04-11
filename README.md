@@ -35,7 +35,7 @@
 
 ## 安装方法
 
-用户可以通过[网站](https://pixel-magic.streamlit.app/)访问并使用像素魔法。
+用户可以通过[网站](https://pixel--magic.streamlit.app/)访问并使用像素魔法。
 
 ## 使用说明
 
@@ -59,15 +59,15 @@
 请通过以下方式联系我们：
 
 - 邮箱：TlomlZQ@gmail.com
-- GitHub仓库：https://github.com/tlomlzq/Pixel-Magic
+- GitHub仓库：https://github.com/tloml-zq/PixelMagic
 
 ## 许可证
 
-该项目基于 [MIT 许可证]([https://github.com/tlomlzq/Pixel-Magic/blob/main/README.md)，请查阅许可证文件获取更多信息。
+该项目基于 [MIT 许可证]([https://github.com/tlom-lzq/PixelMagic/blob/main/README.md)，请查阅许可证文件获取更多信息。
 
 ------
 
 感谢您选择使用像素魔法！我们希望这个工具能够帮助您实现出色的图像处理效果，帮助您评估图像超分辨率模型。如有任何问题或建议，请随时与我们联系。祝您使用愉快！
 
-作者：[tlomlzq](https://github.com/tlomlzq)
+作者：[tlomlzq](https://github.com/tloml-zq)
 
