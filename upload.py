@@ -22,7 +22,7 @@ from LPIPS.lp import lp
 
 class ModelData:
     def __init__(self):
-        self.MODEL_DIR = 'LAM/ModelZoo/models'
+        self.MODEL_DIR = os.path.join('LAM', 'ModelZoo', 'models')
         self.NN_LIST = ['RCAN', 'CARN', 'RRDBNet', 'SAN', 'EDSR', 'HAT', 'SWINIR']
         self.MODEL_LIST = {
             'RCAN': {'Base': 'RCAN.pt'},
@@ -99,8 +99,10 @@ class ModelData:
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             factor = 8
             factor_test = 4
-            file_path = 'image/Set5/original'
-            result = 'image/Set5'
+            file_path = os.path.join('image', 'Set5', 'original')
+            result = os.path.join('image', 'Set5')
+            # file_path = 'image/Set5/original'
+            # result = 'image/Set5'
             result_path = os.path.join(result, s)
             if not os.path.exists(result_path):
                 os.makedirs(result_path)
@@ -137,7 +139,8 @@ class ModelData:
                     utils.save_img(save_file, img_as_ubyte(restored))
 
                 # 计算PSNR, SSIM, LPIPS
-                file_path = 'image/Set5/original'
+                file_path = os.path.join('image', 'Set5', 'original')
+                #file_path = 'image/Set5/original'
                 path_list = natsorted(glob(os.path.join(file_path, '*.png')))
                 result_list = natsorted(glob(os.path.join(result_path, '*.png')))
 

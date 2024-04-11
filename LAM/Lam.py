@@ -94,7 +94,8 @@ def main(inp_path, choice, Model_list, Model_pth_list):
     img_name = f"img_{random_number}.jpg"
     #pil.show()
 
-    lam_dir = "LAM\\result"+ "\\" + img_name
+    #lam_dir = "LAM\\result"+ "\\" + img_name
+    lam_dir = os.path.join('LAM', 'result', img_name)
     pil.save(lam_dir)
 
     gini_index = gini(abs_normed_grad_numpy)

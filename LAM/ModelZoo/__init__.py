@@ -8,7 +8,7 @@ from upload import ModelData
 #from demo import initialize_session_state
 
 
-MODEL_DIR = 'LAM/ModelZoo/models'
+MODEL_DIR = os.path.join('LAM', 'ModelZoo', 'models')
 
 
 MODEL_KWARGS_DICT = {
@@ -70,7 +70,8 @@ def get_network(model_name: str, Model_list):
     model_base_name = model_name.split('-')[0]
     print(f'Getting SR Network {model_name}')
 
-    yaml_folder = "LAM/ModelZoo/yaml"  # yaml文件夹路径
+    #yaml_folder = "LAM/ModelZoo/yaml"  # yaml文件夹路径
+    yaml_folder = os.path.join('LAM', 'ModelZoo', 'yaml')
 
     if model_base_name in model_list:
         try:

@@ -31,30 +31,48 @@ def save_gray_img(filepath, img):
 def get_weights_and_parameters(task, parameters):
     global weights
     if task == '运动去模糊':
-        weights = 'Restormer/Motion_Deblurring/pretrained_models/motion_deblurring.pth'
-        #weights = os.path.join('Motion_Deblurring', 'pretrained_models', 'motion_deblurring.pth')
+        weights = os.path.join('Restormer', 'Motion_Deblurring', 'pretrained_models', 'motion_deblurring.pth')
     elif task == '单图像散焦去模糊':
-        weights = 'Restormer/Defocus_Deblurring/pretrained_models/single_image_defocus_deblurring.pth'
-        #weights = os.path.join('Motion_Deblurring', 'pretrained_models', 'single_image_defocus_deblurring.pth')
+        weights = os.path.join('Restormer', 'Defocus_Deblurring', 'pretrained_models', 'single_image_defocus_deblurring.pth')
     elif task == '图像去雨':
-        weights = 'Restormer/Motion_Deblurring/pretrained_models/deraining.pth'
-        #weights = 'Motion_Deblurring/pretrained_models/deraining.pth'
-        # weights = os.path.join('Motion_Deblurring', 'pretrained_models', 'deraining.pth')
-    # elif task == 'Real_Denoising':
-    #     weights = 'Restormer/Motion_Deblurring/pretrained_models/real_denoising.pth'
-    #     #weights = os.path.join('Motion_Deblurring', 'pretrained_models', 'real_denoising.pth')
-    #     parameters['LayerNorm_type'] =  'BiasFree'
+        weights = os.path.join('Restormer', 'Motion_Deblurring', 'pretrained_models', 'deraining.pth')
     elif task == '高斯彩色去噪':
-        weights = 'Restormer/Motion_Deblurring/pretrained_models/gaussian_color_denoising_blind.pth'
-        #weights = os.path.join('Motion_Deblurring', 'pretrained_models', 'gaussian_color_denoising_blind.pth')
+        weights = os.path.join('Restormer', 'Motion_Deblurring', 'pretrained_models', 'gaussian_color_denoising_blind.pth')
         parameters['LayerNorm_type'] =  'BiasFree'
     elif task == '高斯灰度去噪':
-        weights = 'Restormer/Motion_Deblurring/pretrained_models/gaussian_gray_denoising_blind.pth'
-        #weights = os.path.join('Motion_Deblurring', 'pretrained_models', 'gaussian_gray_denoising_blind.pth')
+        weights = os.path.join('Restormer', 'Motion_Deblurring', 'pretrained_models', 'gaussian_gray_denoising_blind.pth')
         parameters['inp_channels'] =  1
         parameters['out_channels'] =  1
         parameters['LayerNorm_type'] =  'BiasFree'
     return weights, parameters
+#
+# def get_weights_and_parameters(task, parameters):
+#     global weights
+#     if task == '运动去模糊':
+#         weights = 'Restormer/Motion_Deblurring/pretrained_models/motion_deblurring.pth'
+#         #weights = os.path.join('Motion_Deblurring', 'pretrained_models', 'motion_deblurring.pth')
+#     elif task == '单图像散焦去模糊':
+#         weights = 'Restormer/Defocus_Deblurring/pretrained_models/single_image_defocus_deblurring.pth'
+#         #weights = os.path.join('Motion_Deblurring', 'pretrained_models', 'single_image_defocus_deblurring.pth')
+#     elif task == '图像去雨':
+#         weights = 'Restormer/Motion_Deblurring/pretrained_models/deraining.pth'
+#         #weights = 'Motion_Deblurring/pretrained_models/deraining.pth'
+#         # weights = os.path.join('Motion_Deblurring', 'pretrained_models', 'deraining.pth')
+#     # elif task == 'Real_Denoising':
+#     #     weights = 'Restormer/Motion_Deblurring/pretrained_models/real_denoising.pth'
+#     #     #weights = os.path.join('Motion_Deblurring', 'pretrained_models', 'real_denoising.pth')
+#     #     parameters['LayerNorm_type'] =  'BiasFree'
+#     elif task == '高斯彩色去噪':
+#         weights = 'Restormer/Motion_Deblurring/pretrained_models/gaussian_color_denoising_blind.pth'
+#         #weights = os.path.join('Motion_Deblurring', 'pretrained_models', 'gaussian_color_denoising_blind.pth')
+#         parameters['LayerNorm_type'] =  'BiasFree'
+#     elif task == '高斯灰度去噪':
+#         weights = 'Restormer/Motion_Deblurring/pretrained_models/gaussian_gray_denoising_blind.pth'
+#         #weights = os.path.join('Motion_Deblurring', 'pretrained_models', 'gaussian_gray_denoising_blind.pth')
+#         parameters['inp_channels'] =  1
+#         parameters['out_channels'] =  1
+#         parameters['LayerNorm_type'] =  'BiasFree'
+#     return weights, parameters
 
 def main(inp_path, choice):
     extensions = ['jpg', 'JPG', 'png', 'PNG', 'jpeg', 'JPEG', 'bmp', 'BMP']
@@ -73,10 +91,12 @@ def main(inp_path, choice):
         raise Exception(f'No files found at {inp_dir}')
 
     if choice == 'Deraining':
-        weight = 'Restormer/Motion_Deblurring/pretrained_models/deraining.pth'
+        weight = os.path.join('Restormer', 'Motion_Deblurring', 'pretrained_models', 'deraining.pth')
+        #weight = 'Restormer/Motion_Deblurring/pretrained_models/deraining.pth'
 
         ####### Load yaml #######
-        yaml_file = 'Restormer/Deraining/Options/Deraining_Restormer.yml'
+        yaml_file = os.path.join('Restormer', 'Deraining', 'Options', 'Deraining_Restormer.yml')
+        #yaml_file = 'Restormer/Deraining/Options/Deraining_Restormer.yml'
         import yaml
 
         try:
@@ -87,7 +107,8 @@ def main(inp_path, choice):
         x = yaml.load(open(yaml_file, mode='r'), Loader=Loader)
         s = x['network_g'].pop('type')
 
-        load_arch = run_path('Restormer/basicsr/models/archs/restormer_arch.py')
+        #load_arch = run_path('Restormer/basicsr/models/archs/restormer_arch.py')
+        load_arch = run_path(os.path.join('Restormer', 'basicsr', 'models', 'archs', 'restormer_arch.py'))
         model_restoration = load_arch['Restormer'](**x['network_g'])
 
         checkpoint = torch.load(weight)
@@ -129,7 +150,8 @@ def main(inp_path, choice):
         weight, parameters = get_weights_and_parameters(choice, parameters)
 
         # load_arch = run_path(os.path.join('basicsr', 'models', 'archs', 'restormer_arch.py'))
-        load_arch = run_path('Restormer/basicsr/models/archs/restormer_arch.py')
+        #load_arch = run_path('Restormer/basicsr/models/archs/restormer_arch.py')
+        load_arch = run_path(os.path.join('Restormer', 'basicsr', 'models', 'archs', 'restormer_arch.py'))
         #load_arch = run_path('basicsr/models/archs/restormer_arch.py')
         model = load_arch['Restormer'](**parameters)
 
@@ -173,7 +195,8 @@ def main(inp_path, choice):
                 restored = img_as_ubyte(restored[0])
 
 
-    out_dir = "Restormer/demo/restored"
+    #out_dir = "Restormer/demo/restored"
+    out_dir = os.path.join('Restormer', 'demo', 'restored')
 
     f = os.path.splitext(os.path.split(file_)[-1])[0]
     # stx()

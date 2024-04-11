@@ -114,7 +114,8 @@ def get_upload_img(upload_file):
 # 图片储存
 def save_img(img_list):
     now = str(time.time()).split(".")[1]
-    name = f'Restormer\\demo\\degraded\\image_{now}.jpg'
+    name = os.path.join('Restormer', 'demo', 'degraded', f'image_{now}.jpg')
+    #name = f'Restormer\\demo\\degraded\\image_{now}.jpg'
     cv2.imwrite(filename=name, img=img_list)
     return name
 
@@ -215,7 +216,7 @@ def two_page():
         # st.write("Please upload the pictures that need to be restored")
     # 在右侧列添加内容
     with col2:
-        lottie6 = load_lottiefile("Cartoon/sheep.json")
+        lottie6 = load_lottiefile(os.path.join("Cartoon", "sheep.json"))
         st_lottie(lottie6, key='come', height=130, width=150)
     # st.title("图像恢复")
     # st.markdown("<p style='text-align: right;'><em>在这个页面，您可以体验到图像恢复的神奇之处。🤗</em></p>", unsafe_allow_html=True)
@@ -248,7 +249,8 @@ def update_session_state():
         st.markdown(" ")
     # 在右侧列添加内容
     with col2:
-        lottie8 = load_lottiefile("Cartoon/animal.json")
+        lottie8 = load_lottiefile(os.path.join("Cartoon", "animal.json"))
+        #lottie8 = load_lottiefile("Cartoon/animal.json")
         st_lottie(lottie8, key='up', height=160, width=160)
 
     weight_file = st.file_uploader("请上传模型的权重文件", type=['pt', 'pth'])
@@ -293,7 +295,8 @@ def update_session_state():
                     yaml_name = os.path.basename(yaml_file_path)
                     arch_name = os.path.basename(arch_file_path)
 
-                    new_weight_location = "LAM/ModelZoo/models"
+                    #new_weight_location = "LAM/ModelZoo/models"
+                    new_weight_location = os.path.join("LAM", "ModelZoo", "models")
                     new_weight_file_path = os.path.join(new_weight_location, weight_name)
                     new_weight_file_path = new_weight_file_path.replace("\\", "/")
 
@@ -302,7 +305,8 @@ def update_session_state():
                             f.write(weight_file.read())
                     # 另存yaml文件
 
-                    new_yaml_location = "LAM/ModelZoo/yaml"
+                    #new_yaml_location = "LAM/ModelZoo/yaml"
+                    new_yaml_location = os.path.join("LAM", "ModelZoo", "yaml")
                     new_yaml_file_path = os.path.join(new_yaml_location, yaml_name)
                     new_yaml_file_path = new_yaml_file_path.replace("\\", "/")
                     # st.write(new_yaml_file_path)
@@ -317,7 +321,8 @@ def update_session_state():
                         yaml.dump(data, f)
 
                     # 另存arch文件
-                    new_arch_location = "LAM/ModelZoo/NN"
+                    #new_arch_location = "LAM/ModelZoo/NN"
+                    new_arch_location = os.path.join("LAM", "ModelZoo", "NN")
                     new_arch_file_path = os.path.join(new_arch_location, arch_name)
                     new_arch_file = new_arch_file_path.replace("\\", "/")
 
@@ -349,7 +354,7 @@ def update_session_state():
                             st.write(f"已成功上传名为{s}的模型✅")
 
                         with col2:
-                            lottie4 = load_lottiefile("Cartoon/star.json")
+                            lottie4 = load_lottiefile(os.path.join("Cartoon", "star.json"))
                             st_lottie(lottie4, key='great', height=220, width=220)
 
                     return True
@@ -383,7 +388,7 @@ def display_selected_model():
         st.write("👉 在此页面上，您可以选择不同的图像超分辨率模型进行评估，并查看不同指标的可视化结果，以帮助您评估模型性能的优劣。✨")
         st.markdown(" ")
     with col2:
-        lottie9 = load_lottiefile("Cartoon/panda.json")
+        lottie9 = load_lottiefile(os.path.join("Cartoon", "panda.json"))
         st_lottie(lottie9, key='up', height=170, width=170)
 
     # st.title('性能评估')
@@ -602,7 +607,7 @@ if selected=="功能简介":
                 """
             )
         with col2:
-            lottie2 = load_lottiefile("Cartoon/robot.json")
+            lottie2 = load_lottiefile(os.path.join("Cartoon", "robot.json"))
             st_lottie(lottie2, key='place', height=350, width=340)
 
     st.divider()
