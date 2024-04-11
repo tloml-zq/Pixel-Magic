@@ -156,7 +156,12 @@ def main(inp_path, choice):
 
         # load_arch = run_path(os.path.join('basicsr', 'models', 'archs', 'restormer_arch.py'))
         #load_arch = run_path('Restormer/basicsr/models/archs/restormer_arch.py')
-        load_arch = run_path(os.path.abspath('Restormer', 'basicsr', 'models', 'archs', 'restormer_arch.py'))
+        weights_path = os.path.abspath(
+            os.path.join('Restormer', 'basicsr', 'pretrained_models', 'motion_deblurring.pth'))
+
+        # 使用绝对路径加载模型
+        load_arch = run_path(weights_path)
+        #load_arch = run_path(os.path.abspath('Restormer', 'basicsr', 'models', 'archs', 'restormer_arch.py'))
         #load_arch = run_path('basicsr/models/archs/restormer_arch.py')
         model = load_arch['Restormer'](**parameters)
 
