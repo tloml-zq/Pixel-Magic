@@ -35,7 +35,7 @@ def get_weights_and_parameters(task, parameters):
     elif task == '单图像散焦去模糊':
         weights = os.path.join('Restormer', 'Defocus_Deblurring', 'pretrained_models', 'single_image_defocus_deblurring.pth')
     elif task == '图像去雨':
-        weights = os.path.abspath('Restormer/Motion_Deblurring/pretrained_models/motion_deblurring.pth')
+        weights = os.path.abspath('Restormer/Motion_Deblurring/pretrained_models/deraining.pth')
         #weights = os.path.join('Restormer', 'Motion_Deblurring', 'pretrained_models', 'deraining.pth')
     elif task == '高斯彩色去噪':
         weights = os.path.join('Restormer', 'Motion_Deblurring', 'pretrained_models', 'gaussian_color_denoising_blind.pth')
