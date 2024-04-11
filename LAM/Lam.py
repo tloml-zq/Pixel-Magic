@@ -16,7 +16,7 @@ import torch
 import os
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
-sys.path.append('LAM_Demo-main')
+#sys.path.append('LAM_Demo-main')
 from LAM.ModelZoo.utils import Tensor2PIL, PIL2Tensor
 from LAM.ModelZoo import load_model
 from LAM.SaliencyModel.utils import vis_saliency, vis_saliency_kde, grad_abs_norm, prepare_images, make_pil_grid, prepare_restormer_images
