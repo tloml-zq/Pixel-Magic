@@ -35,7 +35,8 @@ def get_weights_and_parameters(task, parameters):
     elif task == '单图像散焦去模糊':
         weights = os.path.join('Restormer', 'Defocus_Deblurring', 'pretrained_models', 'single_image_defocus_deblurring.pth')
     elif task == '图像去雨':
-        weights = os.path.join('Restormer', 'Motion_Deblurring', 'pretrained_models', 'deraining.pth')
+        weights = os.path.abspath('Restormer/Motion_Deblurring/pretrained_models/motion_deblurring.pth')
+        #weights = os.path.join('Restormer', 'Motion_Deblurring', 'pretrained_models', 'deraining.pth')
     elif task == '高斯彩色去噪':
         weights = os.path.join('Restormer', 'Motion_Deblurring', 'pretrained_models', 'gaussian_color_denoising_blind.pth')
         parameters['LayerNorm_type'] =  'BiasFree'
@@ -91,11 +92,13 @@ def main(inp_path, choice):
         raise Exception(f'No files found at {inp_dir}')
 
     if choice == 'Deraining':
-        weight = os.path.join('Restormer', 'Motion_Deblurring', 'pretrained_models', 'deraining.pth')
+        #weight = os.path.join('Restormer', 'Motion_Deblurring', 'pretrained_models', 'deraining.pth')
+        weight = os.path.abspath('Restormer/Motion_Deblurring/pretrained_models/motion_deblurring.pth')
         #weight = 'Restormer/Motion_Deblurring/pretrained_models/deraining.pth'
 
         ####### Load yaml #######
-        yaml_file = os.path.join('Restormer', 'Deraining', 'Options', 'Deraining_Restormer.yml')
+        yaml_file = os.path.abspath('Restormer', 'Deraining', 'Options', 'Deraining_Restormer.yml')
+        #yaml_file = os.path.join('Restormer', 'Deraining', 'Options', 'Deraining_Restormer.yml')
         #yaml_file = 'Restormer/Deraining/Options/Deraining_Restormer.yml'
         import yaml
 
@@ -108,7 +111,9 @@ def main(inp_path, choice):
         s = x['network_g'].pop('type')
 
         #load_arch = run_path('Restormer/basicsr/models/archs/restormer_arch.py')
-        load_arch = run_path(os.path.join('Restormer', 'basicsr', 'models', 'archs', 'restormer_arch.py'))
+        #load_arch = run_path(os.path.join('Restormer', 'basicsr', 'models', 'archs', 'restormer_arch.py'))
+        load_arch = run_path(os.path.abspath('Restormer', 'basicsr', 'models', 'archs', 'restormer_arch.py'))
+
         model_restoration = load_arch['Restormer'](**x['network_g'])
 
         checkpoint = torch.load(weight)
@@ -151,7 +156,7 @@ def main(inp_path, choice):
 
         # load_arch = run_path(os.path.join('basicsr', 'models', 'archs', 'restormer_arch.py'))
         #load_arch = run_path('Restormer/basicsr/models/archs/restormer_arch.py')
-        load_arch = run_path(os.path.join('Restormer', 'basicsr', 'models', 'archs', 'restormer_arch.py'))
+        load_arch = run_path(os.path.abspath('Restormer', 'basicsr', 'models', 'archs', 'restormer_arch.py'))
         #load_arch = run_path('basicsr/models/archs/restormer_arch.py')
         model = load_arch['Restormer'](**parameters)
 
