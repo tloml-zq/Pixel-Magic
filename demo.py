@@ -20,10 +20,10 @@ import cv2
 from upload import ModelData
 
 
-
 def initialize_session_state():
     class SessionState:
         def __init__(self):
+            self.language = ''
             self.last_uploaded_model = None
             self.selected = None  # 在这里添加 selected 属性
             self.model_names = [
@@ -57,20 +57,6 @@ def initialize_session_state():
 
     return SessionState()
 
-#Layout
-st.set_page_config(
-    page_title="PixelMagic",
-    layout="wide",
-    initial_sidebar_state="expanded")
-
-#Data Pull and Functions
-st.markdown("""
-<style>
-.big-font {
-    font-size:80px !important;
-}
-</style>
-""", unsafe_allow_html=True)
 
 @st.cache_data
 def load_lottiefile(filepath: str):
@@ -114,8 +100,7 @@ def get_upload_img(upload_file):
 # 图片储存
 def save_img(img_list):
     now = str(time.time()).split(".")[1]
-    name = os.path.join('Restormer', 'demo', 'degraded', f'image_{now}.jpg')
-    #name = f'Restormer\\demo\\degraded\\image_{now}.jpg'
+    name = f'Restormer\\demo\\degraded\\image_{now}.jpg'
     cv2.imwrite(filename=name, img=img_list)
     return name
 
@@ -129,12 +114,6 @@ def remove_file(path):
         # remove
         os.remove(path)
 
-#Options Menu
-with st.sidebar:
-    selected = option_menu('像素魔法', ["功能简介", '图像恢复','模型上传', '性能评估'],
-        icons=['play-btn','image','upload', 'info-circle'],menu_icon='intersect', default_index=0)
-    lottie = load_lottiefile("Cartoon/cat.json")
-    st_lottie(lottie,key='loc')
 
 def process_image(upload_file):
 
@@ -190,14 +169,7 @@ def validate_folder_path(folder_path):
 
     # 检查路径是否存在
     if not os.path.exists(folder_path):
-        try:
-            os.makedirs(folder_path)
-            return True, f"文件夹路径 '{folder_path}' 不存在，已成功创建."
-        except Exception as e:
-            return False, f"无法创建文件夹路径 '{folder_path}': {str(e)}"
-
-            #return False, f"文件夹路径 '{folder_path}' 已存在."
-        #return False, f"文件夹路径 '{folder_path}' 不存在."
+        return False, f"文件夹路径 '{folder_path}' 不存在."
 
     # 检查路径是否是文件夹
     if not os.path.isdir(folder_path):
@@ -216,7 +188,7 @@ def two_page():
         # st.write("Please upload the pictures that need to be restored")
     # 在右侧列添加内容
     with col2:
-        lottie6 = load_lottiefile(os.path.join("Cartoon", "sheep.json"))
+        lottie6 = load_lottiefile("Cartoon/sheep.json")
         st_lottie(lottie6, key='come', height=130, width=150)
     # st.title("图像恢复")
     # st.markdown("<p style='text-align: right;'><em>在这个页面，您可以体验到图像恢复的神奇之处。🤗</em></p>", unsafe_allow_html=True)
@@ -249,8 +221,7 @@ def update_session_state():
         st.markdown(" ")
     # 在右侧列添加内容
     with col2:
-        lottie8 = load_lottiefile(os.path.join("Cartoon", "animal.json"))
-        #lottie8 = load_lottiefile("Cartoon/animal.json")
+        lottie8 = load_lottiefile("Cartoon/animal.json")
         st_lottie(lottie8, key='up', height=160, width=160)
 
     weight_file = st.file_uploader("请上传模型的权重文件", type=['pt', 'pth'])
@@ -295,8 +266,7 @@ def update_session_state():
                     yaml_name = os.path.basename(yaml_file_path)
                     arch_name = os.path.basename(arch_file_path)
 
-                    #new_weight_location = "LAM/ModelZoo/models"
-                    new_weight_location = os.path.join("LAM", "ModelZoo", "models")
+                    new_weight_location = "LAM/ModelZoo/models"
                     new_weight_file_path = os.path.join(new_weight_location, weight_name)
                     new_weight_file_path = new_weight_file_path.replace("\\", "/")
 
@@ -305,8 +275,7 @@ def update_session_state():
                             f.write(weight_file.read())
                     # 另存yaml文件
 
-                    #new_yaml_location = "LAM/ModelZoo/yaml"
-                    new_yaml_location = os.path.join("LAM", "ModelZoo", "yaml")
+                    new_yaml_location = "LAM/ModelZoo/yaml"
                     new_yaml_file_path = os.path.join(new_yaml_location, yaml_name)
                     new_yaml_file_path = new_yaml_file_path.replace("\\", "/")
                     # st.write(new_yaml_file_path)
@@ -321,8 +290,7 @@ def update_session_state():
                         yaml.dump(data, f)
 
                     # 另存arch文件
-                    #new_arch_location = "LAM/ModelZoo/NN"
-                    new_arch_location = os.path.join("LAM", "ModelZoo", "NN")
+                    new_arch_location = "LAM/ModelZoo/NN"
                     new_arch_file_path = os.path.join(new_arch_location, arch_name)
                     new_arch_file = new_arch_file_path.replace("\\", "/")
 
@@ -354,7 +322,7 @@ def update_session_state():
                             st.write(f"已成功上传名为{s}的模型✅")
 
                         with col2:
-                            lottie4 = load_lottiefile(os.path.join("Cartoon", "star.json"))
+                            lottie4 = load_lottiefile("Cartoon/star.json")
                             st_lottie(lottie4, key='great', height=220, width=220)
 
                     return True
@@ -388,7 +356,7 @@ def display_selected_model():
         st.write("👉 在此页面上，您可以选择不同的图像超分辨率模型进行评估，并查看不同指标的可视化结果，以帮助您评估模型性能的优劣。✨")
         st.markdown(" ")
     with col2:
-        lottie9 = load_lottiefile(os.path.join("Cartoon", "panda.json"))
+        lottie9 = load_lottiefile("Cartoon/panda.json")
         st_lottie(lottie9, key='up', height=170, width=170)
 
     # st.title('性能评估')
@@ -505,22 +473,6 @@ def display_selected_model():
                 for i, v in enumerate(df['LPIPS']):
                     ax2.text(i, v + 0.05 * (max_lpip - min_lpip), "{:.4f}".format(v), ha='center', va='bottom')
 
-                # with st.container():
-                #     #st.markdown("", unsafe_allow_html=True)  # 添加空行使图形居中显示
-                #
-                #     col3, _, col4 = st.columns([1, 10, 1])  # 创建两个边距列
-                #     with col3:
-                #         st.write("")  # 左边留空
-                #     with col4:
-                #         st.write("")  # 右边留空
-                #
-                #     col5, col6, col7 = st.columns([1, 3, 1])  # 创建三个列来放置图形
-                #     with col5:
-                #         st.write("")  # 左边留空
-                #     with col6:
-                #         st.pyplot(fig2)  # 显示图形
-                #     with col7:
-                #         st.write("")  # 右边留空
 
                 #使用streamlit显示图形
                 with st.container():
@@ -529,8 +481,8 @@ def display_selected_model():
                         st.pyplot(fig2)
                     with col2:
                         st.write("")
-                        # lottie3 = load_lottiefile("Cartoon/evaluation.json")
-                        # st_lottie(lottie3, key='eval', height=360, width=360)
+                        lottie3 = load_lottiefile("Cartoon/evaluation.json")
+                        st_lottie(lottie3, key='eval', height=360, width=360)
 
                 #st.table(df)
                 st.write('LAM图（局部归因图）的比较结果如下')
@@ -542,44 +494,45 @@ def display_selected_model():
                     remove_file(lam[i])
                 if model_s_DI != 0:
                     st.markdown(" ")
-                    st.write("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + f"由上述对比结果中可以看出，模型的感受野比较小，即图像恢复所能够利用的像素点较少，所以可以通过增大模型的感受野，进而提升图像超分辨率的效果。", unsafe_allow_html=True)
+                    st.write("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + f"由上述对比结果中可以看出，{new_model_name}模型的感受野比较小，即图像恢复所能够利用的像素点较少，所以可以通过增大模型的感受野，进而提升图像超分辨率的效果。", unsafe_allow_html=True)
 
                 else:
                     st.write("")
 
-if selected=="功能简介":
-    #Header
+
+def introduce():
+    # Header
     # 使用HTML和CSS设置字体样式
 
     # 定义中文字体样式
     chinese_font_style = """
-        <style>
-            @font-face {
-                font-family: 'CustomChineseFont';
-                src: url('path/to/your/chinese/font.ttf');
-            }
-            body {
-                font-family: 'CustomChineseFont', sans-serif;
-            }
-        </style>
-    """
+            <style>
+                @font-face {
+                    font-family: 'CustomChineseFont';
+                    src: url('path/to/your/chinese/font.ttf');
+                }
+                body {
+                    font-family: 'CustomChineseFont', sans-serif;
+                }
+            </style>
+        """
 
     # 将样式添加到Streamlit页面
     st.markdown(chinese_font_style, unsafe_allow_html=True)
     st.markdown("""
-        <style>
-        .title-font {
-            font-size:42px !important;
-            font-weight:bold !important;
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-        }
-        .subtitle-font {
-            font-size:20px !important;
-            font-style:italic !important;
-            color:#4a4a4a;
-        }
-        </style>
-        """, unsafe_allow_html=True)
+            <style>
+            .title-font {
+                font-size:42px !important;
+                font-weight:bold !important;
+                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            }
+            .subtitle-font {
+                font-size:20px !important;
+                font-style:italic !important;
+                color:#4a4a4a;
+            }
+            </style>
+            """, unsafe_allow_html=True)
 
     # 应用自定义样式到标题和子标题
     st.markdown('<div class="title-font">👋欢迎使用像素魔法！</div>', unsafe_allow_html=True)
@@ -603,29 +556,9 @@ if selected=="功能简介":
                 - 您是否对探索超分辨率图像恢复的技术和能力感兴趣，以改善图像的视觉质量？
                 - 您是否正在评估各种模型在超分辨率图像恢复方面的性能，以优化图像处理流程？
                 - 您是否想深入了解图像恢复的世界，更多地了解超分辨率图像恢复工具这个迷人的领域？
-        
+
                 """
             )
         with col2:
-            lottie2 = load_lottiefile(os.path.join("Cartoon", "robot.json"))
+            lottie2 = load_lottiefile("Cartoon/robot.json")
             st_lottie(lottie2, key='place', height=350, width=340)
-
-    st.divider()
-
-    # Tutorial Video教程视频
-    st.header('使用教程')
-    video_file = open('Video.mp4', 'rb')
-    video_bytes = video_file.read()
-    st.video(video_bytes)
-
-
-if selected == "图像恢复":
-    two_page()
-
-if selected == '模型上传':
-    update_session_state()
-
-#Performance Comparison Page
-if selected=='性能评估':
-    display_selected_model()
-

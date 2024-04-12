@@ -11,7 +11,7 @@ from natsort import natsorted
 from glob import glob
 import cv2
 from tqdm import tqdm
-#from restormerarch import Restormer
+
 import argparse
 from pdb import set_trace as stx
 import numpy as np
@@ -30,18 +30,16 @@ def save_gray_img(filepath, img):
 
 def get_weights_and_parameters(task, parameters):
     global weights
-    if task == '运动去模糊':
-        weights = os.path.join('Restormer', 'Motion_Deblurring', 'pretrained_models', 'motion_deblurring.pth')
-    elif task == '单图像散焦去模糊':
-        weights = os.path.join('Restormer', 'Defocus_Deblurring', 'pretrained_models', 'single_image_defocus_deblurring.pth')
-    elif task == '图像去雨':
-        weights = os.path.abspath('Restormer/Motion_Deblurring/pretrained_models/deraining.pth')
-        #weights = os.path.join('Restormer', 'Motion_Deblurring', 'pretrained_models', 'deraining.pth')
-    elif task == '高斯彩色去噪':
-        weights = os.path.join('Restormer', 'Motion_Deblurring', 'pretrained_models', 'gaussian_color_denoising_blind.pth')
+    if task == 'Motion Deblurring':
+        weights = os.path.join('Motion_Deblurring', 'pretrained_models', 'motion_deblurring.pth')
+    elif task == 'Single Image Defocus_Deblurring':
+        weights = os.path.join('Motion_Deblurring', 'pretrained_models', 'single_image_defocus_deblurring.pth')
+
+    elif task == 'Color Denoising':
+        weights = os.path.join('Motion_Deblurring', 'pretrained_models', 'gaussian_color_denoising_blind.pth')
         parameters['LayerNorm_type'] =  'BiasFree'
-    elif task == '高斯灰度去噪':
-        weights = os.path.join('Restormer', 'Motion_Deblurring', 'pretrained_models', 'gaussian_gray_denoising_blind.pth')
+    elif task == 'Gray Denoising':
+        weights = os.path.join('Motion_Deblurring', 'pretrained_models', 'gaussian_gray_denoising_blind.pth')
         parameters['inp_channels'] =  1
         parameters['out_channels'] =  1
         parameters['LayerNorm_type'] =  'BiasFree'
@@ -64,13 +62,11 @@ def main(inp_path, choice):
         raise Exception(f'No files found at {inp_dir}')
 
     if choice == 'Deraining':
-        #weight = os.path.join('Restormer', 'Motion_Deblurring', 'pretrained_models', 'deraining.pth')
-        weight = os.path.abspath('Restormer/Motion_Deblurring/pretrained_models/motion_deblurring.pth')
+        weight = os.path.join('Restormer', 'Motion_Deblurring', 'pretrained_models', 'deraining.pth')
         #weight = 'Restormer/Motion_Deblurring/pretrained_models/deraining.pth'
 
         ####### Load yaml #######
-        yaml_file = os.path.abspath('Restormer', 'Deraining', 'Options', 'Deraining_Restormer.yml')
-        #yaml_file = os.path.join('Restormer', 'Deraining', 'Options', 'Deraining_Restormer.yml')
+        yaml_file = os.path.join('Restormer', 'Deraining', 'Options', 'Deraining_Restormer.yml')
         #yaml_file = 'Restormer/Deraining/Options/Deraining_Restormer.yml'
         import yaml
 
@@ -83,9 +79,7 @@ def main(inp_path, choice):
         s = x['network_g'].pop('type')
 
         #load_arch = run_path('Restormer/basicsr/models/archs/restormer_arch.py')
-        #load_arch = run_path(os.path.join('Restormer', 'basicsr', 'models', 'archs', 'restormer_arch.py'))
-        load_arch = run_path(os.path.abspath('Restormer', 'basicsr', 'models', 'archs', 'restormer_arch.py'))
-
+        load_arch = run_path(os.path.join('Restormer', 'basicsr', 'models', 'archs', 'restormer_arch.py'))
         model_restoration = load_arch['Restormer'](**x['network_g'])
 
         checkpoint = torch.load(weight)
@@ -126,14 +120,8 @@ def main(inp_path, choice):
                       'LayerNorm_type': 'WithBias', 'dual_pixel_task': False}
         weight, parameters = get_weights_and_parameters(choice, parameters)
 
-        # load_arch = run_path(os.path.join('basicsr', 'models', 'archs', 'restormer_arch.py'))
+        load_arch = run_path(os.path.join('basicsr', 'models', 'archs', 'restormer_arch.py'))
         #load_arch = run_path('Restormer/basicsr/models/archs/restormer_arch.py')
-        weights_path = os.path.abspath(
-            os.path.join('Restormer', 'basicsr', 'models', 'archs', 'restormer_arch.py'))
-
-        # 使用绝对路径加载模型
-        load_arch = run_path(weights_path)
-        #load_arch = run_path(os.path.abspath('Restormer', 'basicsr', 'models', 'archs', 'restormer_arch.py'))
         #load_arch = run_path('basicsr/models/archs/restormer_arch.py')
         model = load_arch['Restormer'](**parameters)
 
@@ -152,7 +140,7 @@ def main(inp_path, choice):
                     torch.cuda.ipc_collect()
                     torch.cuda.empty_cache()
 
-                if choice == '高斯灰度去噪':
+                if choice == 'Gray Denoising':
                     img = load_gray_img(file_)
                 else:
                     img = load_img(file_)
@@ -182,12 +170,12 @@ def main(inp_path, choice):
 
     f = os.path.splitext(os.path.split(file_)[-1])[0]
     # stx()
-    if choice == '高斯灰度去噪':
+    if choice == 'Gray Denoising':
         saved_image_path = os.path.join(out_dir, f + '.png')
         save_gray_img(saved_image_path, restored)
         # save_gray_img((os.path.join(out_dir, f + '.png')), restored)
 
-    elif choice =='图像去雨':
+    elif choice =='Deraining':
         saved_image_path = os.path.join(out_dir, os.path.splitext(os.path.split(inp_dir)[-1])[0] + '.png')
         utils.save_img(saved_image_path, img_as_ubyte(restored))
     else:
@@ -196,5 +184,3 @@ def main(inp_path, choice):
         # save_img((os.path.join(out_dir, f + '.png')), restored)
 
     return saved_image_path
-
-

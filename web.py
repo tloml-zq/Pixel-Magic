@@ -1,8 +1,8 @@
 import streamlit as st
-from streamlit_option_menu import option_menu
+
 import json
 from streamlit_lottie import st_lottie
-from Restormer import restore
+from Restormer import res
 from io import StringIO, BytesIO
 import numpy as np
 from PIL import Image
@@ -20,6 +20,7 @@ from upload import ModelData
 def initialize_session_state():
     class SessionState:
         def __init__(self):
+            self.language = ''
             self.last_uploaded_model = None
             self.selected = None  # 在这里添加 selected 属性
             self.model_names = [
@@ -53,20 +54,6 @@ def initialize_session_state():
 
     return SessionState()
 
-#Layout
-st.set_page_config(
-    page_title="PixelMagic",
-    layout="wide",
-    initial_sidebar_state="expanded")
-
-#Data Pull and Functions
-st.markdown("""
-<style>
-.big-font {
-    font-size:80px !important;
-}
-</style>
-""", unsafe_allow_html=True)
 
 @st.cache_data
 def load_lottiefile(filepath: str):
@@ -76,7 +63,7 @@ def load_lottiefile(filepath: str):
 def click_restore(path, choice):
     img_path = path
     option = choice
-    return restore.main(img_path, option)
+    return res.main(img_path, option)
 
 def click_lam(path, choice, Model_list, Model_pth_list):
     img_path = path
@@ -124,20 +111,13 @@ def remove_file(path):
         # remove
         os.remove(path)
 
-#Options Menu
-with st.sidebar:
-    selected = option_menu('PixelMagic', ["Introduce", 'Image Restoration','Upload', 'Perf Comp'],
-        icons=['play-btn','image','upload', 'info-circle'],menu_icon='intersect', default_index=0)
-    lottie = load_lottiefile("Cartoon/cat.json")
-    st_lottie(lottie,key='loc')
-
 def process_image(upload_file):
 
     if upload_file is not None:
         #st.image(upload_file)
         #st.markdown('Please select a function you want to implement:')
-        menu_options = ['Motion_Deblurring', 'Deraining', 'Single_Image_Defocus_Deblurring',
-                        'Gray_Denoising', 'Color_Denoising']
+        menu_options = ['Motion Deblurring', 'Deraining', 'Single Image Defocus_Deblurring',
+                        'Gray Denoising', 'Color Denoising']
         selected_option = st.selectbox('Please select a function you want to implement', menu_options)  # 这个是task
         if st.button('Start recovery'):
             res = get_upload_img(upload_file)
@@ -372,13 +352,13 @@ def update_session_state():
 
 
 def display_selected_model():
-    #session_state = initialize_session_state()
 
     if hasattr(st.session_state, 'model_names'):
         model_options = st.session_state.model_names
         model_pth = st.session_state.MODEL_LIST
         metrics = st.session_state.metrics
     else:
+        #session_state = session_state
         session_state = initialize_session_state()
         model_options = session_state.model_names
         model_pth = session_state.MODEL_LIST
@@ -417,17 +397,23 @@ def display_selected_model():
                 ssim = []
                 lpip = []
                 DI = []
+                model_s_DI = 0
+                model_na = ['RCAN', 'CARN', 'RRDBNet', 'SAN', 'EDSR', 'HAT', 'SWINIR']
                 for i in range(number):
                     model_name = selected_models[i]
                     model_names.append(model_name)
                     lam_result = click_lam(name, model_name, model_options, model_pth)
                     img_path = lam_result[0]
-                    # di = lam_result[1]
-                    # DI.append(di)
+                    di = lam_result[1]
+                    DI.append(di)
                     lam.append(img_path)
                     psnr.append(metrics[model_name]['psnr'])
                     ssim.append(metrics[model_name]['ssim'])
                     lpip.append(metrics[model_name]['lpips'])
+
+                    if model_name not in model_na:
+                        model_s_DI = di
+                        new_model_name = model_name
 
                 st.write("The comparison of average PSNR, SSIM, and LPIPS is as follows:")
                 # 用户选择的模型和对应的指标值
@@ -519,13 +505,19 @@ def display_selected_model():
                     st.image(lam[i], caption='', use_column_width=True)
                     # st.write(f"The DI of this case is {DI[i]:.2f}")
                     remove_file(lam[i])
+                if model_s_DI != 0:
+                    st.markdown(" ")
+                    st.write("&nbsp;&nbsp;&nbsp;&nbsp;" + f"From the above comparison results, it can be seen that the receptive field of the {new_model_name} model is relatively small, which means that image restoration can utilize fewer pixels. Therefore, increasing the receptive field of the model can improve the effect of image super-resolution.", unsafe_allow_html=True)
 
-if selected=="Introduce":
-    #Header
+                else:
+                    st.write("")
 
+
+def intorduce():
+    # Header
     st.title('Welcome to PixelMagic! 👋')
     st.subheader('*A new super-resolution image restoration and model performance evaluation tool.*')
-    st.divider() #一个*为斜体，两个不是
+    st.divider()  # 一个*为斜体，两个不是
     # Use Cases
     with st.container():
         col1, col2 = st.columns(2)
@@ -542,23 +534,3 @@ if selected=="Introduce":
         with col2:
             lottie2 = load_lottiefile("Cartoon/robot.json")
             st_lottie(lottie2, key='place', height=370, width=350)
-
-    st.divider()
-
-    # Tutorial Video教程视频
-    st.header('Tutorial Video')
-    # video_file = open('Similo_Tutorial3_compressed.mp4', 'rb')
-    # video_bytes = video_file.read()
-    # st.video(video_bytes)
-
-
-if selected == "Image Restoration":
-    two_page()
-
-if selected == 'Upload':
-    update_session_state()
-
-#Performance Comparison Page
-if selected=='Perf Comp':
-    display_selected_model()
-
