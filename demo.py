@@ -224,17 +224,17 @@ def two_page():
     upload_file = st.file_uploader(label='请上传需要恢复的图片', type=['jpg', 'png', 'jpeg'], key="uploader5")
     if upload_file is not None:
         st.image(upload_file)
-    # save_folder_path = st.text_input("请输入恢复后图像所要保存在的文件夹路径", "")
-    #
-    # # 验证文件夹路径
-    # is_valid_folder_path, folder_path_error = validate_folder_path(save_folder_path)
-    # if not is_valid_folder_path:
-    #     st.warning(folder_path_error)
-    #     return
+    save_folder_path = st.text_input("请输入恢复后图像所要保存在的文件夹路径", "")
+
+    # 验证文件夹路径
+    is_valid_folder_path, folder_path_error = validate_folder_path(save_folder_path)
+    if not is_valid_folder_path:
+        st.warning(folder_path_error)
+        return
 
     res_img = process_image(upload_file)
-    # if res_img is not None:
-    #     save(res_img, upload_file, save_folder_path)
+    if res_img is not None:
+        save(res_img, upload_file, save_folder_path)
 
 def update_session_state():
     session_state = initialize_session_state()
