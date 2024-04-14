@@ -10,18 +10,8 @@ import torch
 from basicsr.metrics.metric_util import reorder_image, to_y_channel
 
 
-
 def load_img(filepath):
-    # img_np = np.fromfile(filepath, np.uint8)
-    # img = cv2.imdecode(img_np, cv2.IMREAD_COLOR)
-    # return img
-
-    # img = cv2.imread(filepath)
-    # return cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
     return cv2.cvtColor(cv2.imread(filepath), cv2.COLOR_BGR2RGB)
-
-
 
 
 def save_img(filepath, img):

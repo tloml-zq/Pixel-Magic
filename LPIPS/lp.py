@@ -1,25 +1,27 @@
 import argparse
 import os
 import lpips
+import numpy as np
 
-def lp(d0, d1):
-	loss_fn = lpips.LPIPS(net='alex', version=0.1)
-	loss_fn.cuda()
+def lp(original_images, restored_images):
+    loss_fn = lpips.LPIPS(net='alex', version=0.1)
+    loss_fn.cuda()
 
-	files = os.listdir(d0)
-	lpips_distances = []
+    lpips_distances = []
 
-	for file in files:
-		if os.path.exists(os.path.join(d1, file)):
-			# Load images
-			img0 = lpips.im2tensor(lpips.load_image(os.path.join(d0, file)))  # RGB image from [-1,1]
-			img1 = lpips.im2tensor(lpips.load_image(os.path.join(d1, file)))
-			img0 = img0.cuda()
-			img1 = img1.cuda()
-			dist01 = loss_fn.forward(img0, img1)
-			#print('%s: %.3f' % (file, dist01))
-			#lpips_distances.append(dist01)
-			lpips_distances.append(dist01.item())
+    for orig_img, rest_img in zip(original_images, restored_images):
+        # 图片预处理
+        orig_img = orig_img[:,:,::-1]
+        rest_img = rest_img[:,:,::-1]
 
-	average_lpips = sum(lpips_distances) / len(lpips_distances)
-	return round(average_lpips, 4)
+        orig_img_tensor = lpips.im2tensor(orig_img.astype(np.float32))
+        rest_img_tensor = lpips.im2tensor(rest_img.astype(np.float32))
+
+        orig_img_tensor = orig_img_tensor.cuda()
+        rest_img_tensor = rest_img_tensor.cuda()
+
+        dist = loss_fn.forward(orig_img_tensor, rest_img_tensor)
+        lpips_distances.append(dist.item())
+
+    average_lpips = sum(lpips_distances) / len(lpips_distances)
+    return round(average_lpips, 4)

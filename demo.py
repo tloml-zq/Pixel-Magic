@@ -13,12 +13,13 @@ import os
 import pandas as pd
 import shutil
 from LAM import Lam
-from LPIPS import lpips
+from LPIPS import lp
+#from LPIPS import lpips
 import yaml
 import matplotlib.pyplot as plt
 import cv2
 from upload import ModelData
-
+from LPIPS.lp import lp
 
 def initialize_session_state():
     class SessionState:
@@ -26,6 +27,10 @@ def initialize_session_state():
             self.language = ''
             self.last_uploaded_model = None
             self.selected = None  # 在这里添加 selected 属性
+            self.weight_file = None
+            self.yaml_file = None
+            self.arch_file = None
+
             self.model_names = [
                 'RCAN',
                 'CARN',
@@ -63,22 +68,27 @@ def load_lottiefile(filepath: str):
     with open(filepath,"r") as f:
         return json.load(f)
 
-def click_restore(path, choice):
-    img_path = path
+def click_restore(image, choice):
+    img = image
     option = choice
-    return restore.main(img_path, option)
+    return restore.main(img, option)
+
 
 def click_lam(path, choice, Model_list, Model_pth_list):
     img_path = path
     option = choice
     model_list = Model_list
     model_pth_list = Model_pth_list
-    return Lam.main(img_path, option, model_list, model_pth_list)
+    return Lam.main0(img_path, option, model_list, model_pth_list)
 
-def click_lpips(dir0,dir1):
-    d0 = dir0
-    d1 = dir1
-    return lpips.main(d0, d1)
+
+def click_lam1(path, choice, Model_list, Model_pth_list, Weight_file, Yaml_file, Arch_file):
+    img_path = path
+    option = choice
+    model_list = Model_list
+    model_pth_list = Model_pth_list
+    return Lam.main1(img_path, option, model_list, model_pth_list, Weight_file, Yaml_file, Arch_file)
+
 
 def convert_path(path):
     # 将斜杠转换为反斜杠
@@ -90,65 +100,37 @@ def save_image_to_absolute_path(relative_image_path, absolute_output_path):
     input_image_path = os.path.join(current_directory, relative_image_path)
     shutil.copyfile(input_image_path, absolute_output_path)
 
-# 获得图片 bytes => [[list]]
-def get_upload_img(upload_file):
-    bytes_stream = BytesIO(upload_file.getvalue())
-    capture_img = Image.open(bytes_stream)
-    return cv2.cvtColor(np.asarray(capture_img), cv2.COLOR_RGB2BGR)
-
-
-# 图片储存
-def save_img(img_list):
-    now = str(time.time()).split(".")[1]
-    name = f'Restormer\\demo\\degraded\\image_{now}.jpg'
-    cv2.imwrite(filename=name, img=img_list)
-    return name
 
 def save_image(image_path, image):
     img = Image.open(image)
     img.save(image_path)
 
-# 资源删除
-def remove_file(path):
-    if os.path.exists(path):
-        # remove
-        os.remove(path)
-
 
 def process_image(upload_file):
 
     if upload_file is not None:
-
         #st.markdown('')
         menu_options = ['运动去模糊', '图像去雨', '单图像散焦去模糊', '高斯灰度去噪', '高斯彩色去噪']
         selected_option = st.selectbox('请选择要实现的功能', menu_options)  # 这个是task
         if st.button('开始恢复'):
-            res = get_upload_img(upload_file)
-            name = save_img(res)  # 这个是input_dir
+
             # 处理
             st.write('正在恢复中. . .')
-            restore_res = click_restore(name, selected_option)
+            restore_res = click_restore(upload_file, selected_option)
             # 显示检测完成消息
             st.write('{}任务已完成!\n 结果如下:'.format(selected_option))
             st.image(restore_res)
             st.write('图像恢复前后的对比图如下:')
             col1, col2 = st.columns(2)
             with col1:
-                st.image(name, width=300)
+                st.image(upload_file, width=300)
 
             with col2:
                 st.image(restore_res, width=300)
-            re_img = convert_path(restore_res)
-            # st.write(re_img)
-            return re_img
+            return restore_res
 
-def save(res_img_path, upload_file, save_folder_path):
-    # 加载恢复后的图片
-    try:
-        res_img = Image.open(res_img_path)
-    except Exception as e:
-        st.error(f"加载还原的图像时出错: {e}")
-        return
+
+def save(res_img, upload_file, save_folder_path):
 
     # 生成保存图像的文件名
     file_name = upload_file.name.split('.')[0] + '_restored.jpg'
@@ -190,15 +172,13 @@ def two_page():
     with col2:
         lottie6 = load_lottiefile("Cartoon/sheep.json")
         st_lottie(lottie6, key='come', height=130, width=150)
-    # st.title("图像恢复")
-    # st.markdown("<p style='text-align: right;'><em>在这个页面，您可以体验到图像恢复的神奇之处。🤗</em></p>", unsafe_allow_html=True)
 
     upload_file = st.file_uploader(label='请上传需要恢复的图片', type=['jpg', 'png', 'jpeg'], key="uploader5")
     if upload_file is not None:
         st.image(upload_file)
+
     save_folder_path = st.text_input("请输入恢复后图像所要保存在的文件夹路径", "")
 
-    # 验证文件夹路径
     is_valid_folder_path, folder_path_error = validate_folder_path(save_folder_path)
     if not is_valid_folder_path:
         st.warning(folder_path_error)
@@ -208,15 +188,14 @@ def two_page():
     if res_img is not None:
         save(res_img, upload_file, save_folder_path)
 
+
 def update_session_state():
     session_state = initialize_session_state()
-    #st.title('上传模型')
     col1, col2 = st.columns([7.5, 2.5])
     # 在左侧列添加内容
     with col1:
         st.title('上传模型')
         st.markdown(" ")
-        #st.markdown("<p style='text-align: right;'>在这个页面，您可以上传您自己的模型，进而实现模型评估。<br/>请按照下面的步骤操作！👇</p>", unsafe_allow_html=True)
         st.write("在这个页面，您可以上传您自己的模型，进而实现模型评估。\n\n 请按照下面的步骤操作！👇")
         st.markdown(" ")
     # 在右侧列添加内容
@@ -228,88 +207,29 @@ def update_session_state():
     yaml_file = st.file_uploader("请上传模型的YAML文件", type=['yml'])
     arch_file = st.file_uploader("请上传模型的结构文件", type=['py'])
 
-    weight_file_path = None
-    yaml_file_path = None
-    arch_file_path = None
-
-    if weight_file is not None:
-        with open(weight_file.name, "wb") as f:
-            f.write(weight_file.getbuffer())
-        weight_file_path = weight_file.name
-
-    if yaml_file is not None:
-        with open(yaml_file.name, "wb") as f:
-            f.write(yaml_file.getbuffer())
-        yaml_file_path = yaml_file.name
-
-    if arch_file is not None:
-        with open(arch_file.name, "wb") as f:
-            f.write(arch_file.getbuffer())
-        arch_file_path = arch_file.name
-
     if st.button("开始上传"):
         st.write("正在上传中...")
         if weight_file and yaml_file and arch_file:
-
-            weight_file = weight_file.name if hasattr(weight_file, 'name') else None
-            yaml_file = yaml_file.name if hasattr(yaml_file, 'name') else None
-            arch_file = arch_file.name if hasattr(arch_file, 'name') else None
-
             try:
-                with open(yaml_file, mode='r', encoding='utf-8') as f:
-                    x = yaml.safe_load(f)
-
+                x = yaml.safe_load(yaml_file.getvalue())
                 s = x.get('network_g', {}).get('type')  # s为模型的名字
+
                 if s:
-                    # 另存weight文件
-                    weight_name = os.path.basename(weight_file_path)
-                    yaml_name = os.path.basename(yaml_file_path)
-                    arch_name = os.path.basename(arch_file_path)
-
-                    new_weight_location = "LAM/ModelZoo/models"
-                    new_weight_file_path = os.path.join(new_weight_location, weight_name)
-                    new_weight_file_path = new_weight_file_path.replace("\\", "/")
-
-                    with open(new_weight_file_path, 'wb') as f:
-                        with open(weight_file, 'rb') as weight_file:
-                            f.write(weight_file.read())
-                    # 另存yaml文件
-
-                    new_yaml_location = "LAM/ModelZoo/yaml"
-                    new_yaml_file_path = os.path.join(new_yaml_location, yaml_name)
-                    new_yaml_file_path = new_yaml_file_path.replace("\\", "/")
-                    # st.write(new_yaml_file_path)
-
-                    # 检查文件夹是否存在，如不存在则创建
-                    os.makedirs(new_yaml_location, exist_ok=True)
-                    # 从旧文件中读取数据
-                    with open(yaml_file, 'r', encoding='utf-8') as ymal_file:
-                        data = yaml.safe_load(ymal_file)
-                    # 将数据写入新的 YAML 文件
-                    with open(new_yaml_file_path, 'w', encoding='utf-8') as f:
-                        yaml.dump(data, f)
-
-                    # 另存arch文件
-                    new_arch_location = "LAM/ModelZoo/NN"
-                    new_arch_file_path = os.path.join(new_arch_location, arch_name)
-                    new_arch_file = new_arch_file_path.replace("\\", "/")
-
-                    with open(new_arch_file, 'w', encoding='utf-8') as f:
-                        with open(arch_file, 'r', encoding='utf-8') as arch_file:
-                            f.write(arch_file.read())
-
                     if s not in session_state.model_names:
-                        st.session_state.model_names = []
+                        st.session_state = initialize_session_state()
+
                         data = ModelData()
-                        upload_result = data.update(new_weight_file_path, new_yaml_file_path, new_arch_file_path)
-                        #print(type(upload_result))
+                        yaml_file_content = yaml_file.getvalue().decode('utf-8')
+                        st.session_state.weight_file = weight_file
+                        st.session_state.yaml_file = yaml_file_content
+                        st.session_state.arch_file = arch_file
+                        upload_result = data.update(weight_file, yaml_file_content, arch_file)
 
                         st.session_state.model_names = upload_result[0]
                         st.session_state.MODEL_LIST = upload_result[1]
                         st.session_state.metrics = upload_result[2]
 
-                    #st.write(f"已成功上传名为{s}的模型✅")
-
+                        #st.write(st.session_state.metrics)
                     with st.container():
                         col1, col2 = st.columns([5, 5])
                         with col1:
@@ -332,21 +252,28 @@ def update_session_state():
         else:
             st.error("请上传所有必要的文件并提供架构文件路径.")
     return False
-    #session_state.selected = st.selectbox("Select a model", session_state.model_names)
 
 
 def display_selected_model():
     #session_state = initialize_session_state()
 
+    weight_file = None
+    yaml_file = None
+    arch_file = None
     if hasattr(st.session_state, 'model_names'):
         model_options = st.session_state.model_names
         model_pth = st.session_state.MODEL_LIST
         metrics = st.session_state.metrics
+        weight_file = st.session_state.weight_file
+        yaml_file = st.session_state.yaml_file
+        arch_file = st.session_state.arch_file
+
     else:
         session_state = initialize_session_state()
         model_options = session_state.model_names
         model_pth = session_state.MODEL_LIST
         metrics = session_state.metrics
+
 
     col1, col2 = st.columns([7.85, 2.15])
     # 在左侧列添加内容
@@ -359,15 +286,9 @@ def display_selected_model():
         lottie9 = load_lottiefile("Cartoon/panda.json")
         st_lottie(lottie9, key='up', height=170, width=170)
 
-    # st.title('性能评估')
-    # st.write("👉 在此页面上，您可以选择不同的图像超分辨率模型进行评估，并查看不同指标的可视化结果，以帮助您评估模型性能的优劣。✨")
-
-    # st.write(session_state.model_names)
     uploaded_file = st.file_uploader("请上传测试所需的图片", type=['jpg', 'png', 'jpeg'], key="uploader2")
     if uploaded_file is not None:
         st.image(uploaded_file)
-        og = get_upload_img(uploaded_file)
-        name = save_img(og)
 
         # 用户自由选择模型名称
         selected_models = st.multiselect("请选择您想要比较的模型（可多选）", model_options)
@@ -386,11 +307,15 @@ def display_selected_model():
                 for i in range(number):
                     model_name = selected_models[i]
                     model_names.append(model_name)
-                    lam_result = click_lam(name, model_name, model_options, model_pth)
-                    img_path = lam_result[0]
+                    if model_name in model_na:
+                        lam_result = click_lam(uploaded_file, model_name, model_options, model_pth)
+                    else:
+                        lam_result = click_lam1(uploaded_file, model_name, model_options, model_pth,
+                                                weight_file, yaml_file, arch_file)
+                    img = lam_result[0]
                     di = lam_result[1]
                     DI.append(di)
-                    lam.append(img_path)
+                    lam.append(img)
                     psnr.append(metrics[model_name]['psnr'])
                     ssim.append(metrics[model_name]['ssim'])
                     lpip.append(metrics[model_name]['lpips'])
@@ -491,7 +416,6 @@ def display_selected_model():
                     st.write(f"模型: {model_names[i]}")
                     st.image(lam[i], caption='', use_column_width=True)
                     # st.write(f"The DI of this case is {DI[i]:.2f}")
-                    remove_file(lam[i])
                 if model_s_DI != 0:
                     st.markdown(" ")
                     st.write("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + f"由上述对比结果中可以看出，{new_model_name}模型的感受野比较小，即图像恢复所能够利用的像素点较少，所以可以通过增大模型的感受野，进而提升图像超分辨率的效果。", unsafe_allow_html=True)

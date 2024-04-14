@@ -8,13 +8,15 @@ import torch
 import torch.nn.functional as F
 import streamlit as st
 import concurrent.futures
-
+import tempfile
+import importlib.util
+import yaml
 from skimage import img_as_ubyte
 from natsort import natsorted
 from glob import glob
 from pdb import set_trace as stx
 from LAM.size import imresize
-from Restormer.basicsr.utils import FileClient, imfrombytes, img2tensor, padding
+
 import cv2
 import yaml as yaml_module
 import utils
@@ -48,11 +50,9 @@ class ModelData:
         try:
             # 处理图像的代码
             tar, prd = filename
-            tar_img = utils.load_img(tar)
-            prd_img = utils.load_img(prd)
-
+            tar_img = cv2.cvtColor(tar, cv2.COLOR_BGR2RGB)
+            prd_img = cv2.cvtColor(prd, cv2.COLOR_BGR2RGB)
             PSNR = utils.calculate_psnr(tar_img, prd_img, 0, test_y_channel=True)
-            #PSNR = utils.calculate_psnr(tar_img, prd_img)
             SSIM = utils.calculate_ssim(tar_img, prd_img, 0, test_y_channel=True)
             return PSNR, SSIM
 
@@ -61,35 +61,41 @@ class ModelData:
             print(f"Error processing {filename}: {e}")
             return None
 
+    def update(self, weight, yaml_string, arch):
+        weight = weight
+        yaml_file = yaml_string
+        arch_file = arch
 
-    def update(self, weight_path, yaml_path, arch_path):
-        weight = weight_path
-        yaml_file = yaml_path
-        arch_file = arch_path
+        x = yaml.safe_load(yaml_file)
+        s = x['network_g'].pop('type')
 
-        with open(yaml_file, mode='r', encoding='utf-8') as f:
-            x = yaml_module.load(f, Loader=yaml_module.FullLoader)
+        self.NN_LIST.append(s)
+        model_list = self.NN_LIST
 
-            s = x['network_g'].pop('type')
+        file_name = weight.name
+        self.MODEL_LIST[s] = {
+            'Base': file_name
+        }
+        model_pth_update = self.MODEL_LIST
 
-            self.NN_LIST.append(s)
-            # print(NN_LIST)
-            model_list = self.NN_LIST
-            file_name = os.path.basename(weight)
-            self.MODEL_LIST[s] = {
-                'Base': file_name
-            }
-            model_pth_update = self.MODEL_LIST
+        arch_name = arch_file.name
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            arch_path = os.path.join(tmpdirname, arch_name)
+            with open(arch_path, 'wb') as tmpfile:
+                tmpfile.write(arch_file.read())
 
-            import importlib.util
-            arch_name = os.path.basename(arch_file)
-            spec = importlib.util.spec_from_file_location(arch_name, arch_file)
+            spec = importlib.util.spec_from_file_location(arch_name, arch_path)
             arch = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(arch)
 
             model_class = getattr(arch, s)
             model = model_class(**x['network_g'])
-            checkpoint = torch.load(weight)
+
+            weight_path = os.path.join(tmpdirname, weight.name)
+            with open(weight_path, 'wb') as tmpfile:
+                tmpfile.write(weight.read())
+
+            checkpoint = torch.load(weight_path)
             model.load_state_dict(checkpoint['params'])
             model.cuda()
             model = nn.DataParallel(model)
@@ -99,14 +105,16 @@ class ModelData:
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             factor = 8
             factor_test = 4
+
             file_path = os.path.join('image', 'Set5', 'original')
-            result = os.path.join('image', 'Set5')
-            # file_path = 'image/Set5/original'
-            # result = 'image/Set5'
-            result_path = os.path.join(result, s)
-            if not os.path.exists(result_path):
-                os.makedirs(result_path)
             files = natsorted(glob(os.path.join(file_path, '*.png')))
+            restored_images = []
+            original_images = []
+            with torch.no_grad():
+                for file_ in tqdm(files):  # 输入图像的预处理
+                    image = cv2.imread(file_)  # 使用 OpenCV 读取图像文件
+                    original_images.append(image)
+
             with torch.no_grad():
                 for file_ in tqdm(files):  # 输入图像的预处理
                     torch.cuda.ipc_collect()
@@ -114,6 +122,7 @@ class ModelData:
                     img = utils.load_img(file_)  # 转为RGB
                     img = img.astype(np.float32) / 255.
                     h_old, w_old, _ = img.shape
+
                     np.random.seed(seed=0)  # for reproducibility
                     img = imresize(img, scalar_scale=1 / factor_test)  # 图像进行缩放以生成低质量（LQ）图像，然后再将其还原回原始尺寸，用于模拟低分辨率输入
                     img = imresize(img, scalar_scale=factor_test)
@@ -135,26 +144,24 @@ class ModelData:
                     # 恢复后图像保存
                     restored = restored[:, :, :h_old, :w_old]
                     restored = torch.clamp(restored, 0, 1).cpu().detach().permute(0, 2, 3, 1).squeeze(0).numpy()
-                    save_file = os.path.join(result_path, os.path.split(file_)[-1])
-                    utils.save_img(save_file, img_as_ubyte(restored))
+
+                    res = img_as_ubyte(restored)
+                    restored_images.append(cv2.cvtColor(res, cv2.COLOR_RGB2BGR))
 
                 # 计算PSNR, SSIM, LPIPS
-                file_path = os.path.join('image', 'Set5', 'original')
-                #file_path = 'image/Set5/original'
-                path_list = natsorted(glob(os.path.join(file_path, '*.png')))
-                result_list = natsorted(glob(os.path.join(result_path, '*.png')))
 
                 psnr, ssim = [], []
-                img_files = [(i, j) for i, j in zip(result_list, path_list)]
-                #print(img_files)
-                with concurrent.futures.ProcessPoolExecutor(max_workers=1) as executor:
-                    for filename, PSNR_SSIM in zip(img_files, executor.map(self.proc, img_files)):
+                inputs = list(zip(original_images, restored_images))
+                for input_data in inputs:
+                    PSNR_SSIM = self.proc(input_data)
+                    # if PSNR_SSIM is not None, which means proc function executed without catching any exception
+                    if PSNR_SSIM:
                         psnr.append(PSNR_SSIM[0])
                         ssim.append(PSNR_SSIM[1])
 
                 average_psnr = round(sum(psnr) / len(psnr), 2)
                 average_ssim = round(sum(ssim) / len(ssim), 4)
-                average_lpips = round(lp(file_path, result_path), 4)
+                average_lpips = lp(original_images, restored_images)
 
                 self.metrics[s] = {
                     'psnr': average_psnr,
@@ -163,12 +170,4 @@ class ModelData:
                 }
                 metrics_update = self.metrics
 
-        return model_list, model_pth_update, metrics_update
-
-# if __name__ == "__main__":
-#     weight = 'new_model/weight/restormer.pth'
-#     yaml_file_path = 'new_model/yaml/restormer.yml'
-#     arch = 'new_model/arch/restormer.py'
-#     my_object = ModelData()
-#     my_object.update(weight, yaml_file_path, arch)
-#     print(my_object.metrics)
+                return model_list, model_pth_update, metrics_update

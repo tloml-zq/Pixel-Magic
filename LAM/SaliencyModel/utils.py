@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 from PIL import Image
 import cv2
+import io
 
 
 def cv2_to_pil(img):
@@ -140,7 +141,7 @@ def click_select_position(pil_img, window_size=16):
     return position[0], position[1], cv2_to_pil(return_img)
 
 def prepare_restormer_images(hr_path, scale=2):
-    hr_pil = Image.open(hr_path)
+    hr_pil = hr_path
     sizex, sizey = hr_pil.size
     hr_pil = hr_pil.crop((0, 0, sizex - sizex % scale, sizey - sizey % scale))
     sizex, sizey = hr_pil.size
@@ -150,7 +151,7 @@ def prepare_restormer_images(hr_path, scale=2):
     return lr_pil, hr_pil
 
 def prepare_images(hr_path, scale=4):
-    hr_pil = Image.open(hr_path)
+    hr_pil = hr_path
     sizex, sizey = hr_pil.size
     hr_pil = hr_pil.crop((0, 0, sizex - sizex % scale, sizey - sizey % scale))
     sizex, sizey = hr_pil.size
