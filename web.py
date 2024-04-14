@@ -444,7 +444,7 @@ def intorduce():
     st.divider()  # 一个*为斜体，两个不是
     # Use Cases
     with st.container():
-        col1, col2 = st.columns(2)
+        col1, col2 = st.columns([5, 5])
         with col1:
             st.header('Use Cases')
             st.markdown(

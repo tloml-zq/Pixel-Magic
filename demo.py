@@ -467,7 +467,7 @@ def introduce():
     st.divider()
     # Use Cases
     with st.container():
-        col1, col2 = st.columns(2)
+        col1, col2 = st.columns([5, 5])
         with col1:
             st.header('使用案例')
 
