@@ -1,12 +1,12 @@
-torch==2.0.0
-torchvision==0.15.1
+torch
+torchaudio
+torchvision
 
-streamlit-lottie
-streamlit-option-menu
 absl-py
 addict
 altair
 attrs
+
 basicsr
 beautifulsoup4
 blinker
@@ -52,12 +52,14 @@ MarkupSafe
 matplotlib
 mdurl
 mkl
+
 natsort
 networkx
 numpy
 oauthlib
 
-opencv-python-headless
+opencv-python
+
 packaging
 pandas
 Pillow
@@ -89,7 +91,9 @@ scipy
 six
 smmap
 soupsieve
-
+streamlit
+streamlit-lottie
+streamlit-option-menu
 tb-nightly
 tbb
 tenacity
