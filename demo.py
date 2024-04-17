@@ -231,7 +231,7 @@ def update_session_state():
 
                         #st.write(st.session_state.metrics)
                     with st.container():
-                        col1, col2 = st.columns([5.5, 4.5])
+                        col1, col2 = st.columns([5, 5])
                         with col1:
                             st.markdown(" ")
                             st.markdown(" ")
