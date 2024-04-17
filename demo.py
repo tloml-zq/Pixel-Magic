@@ -231,7 +231,7 @@ def update_session_state():
 
                         #st.write(st.session_state.metrics)
                     with st.container():
-                        col1, col2 = st.columns([5, 5])
+                        col1, col2 = st.columns([5.5, 4.5])
                         with col1:
                             st.markdown(" ")
                             st.markdown(" ")
@@ -239,11 +239,12 @@ def update_session_state():
                             st.markdown(" ")
                             st.markdown(" ")
                             st.markdown(" ")
-                            st.write(f"已成功上传名为{s}的模型✅")
+                            st.write(f"<span style='font-size: 22px;'>已成功上传{s}模型✅</span>",
+                                     unsafe_allow_html=True)
 
                         with col2:
                             lottie4 = load_lottiefile("Cartoon/star.json")
-                            st_lottie(lottie4, key='great', height=220, width=220)
+                            st_lottie(lottie4, key='great', height=250, width=250)
 
                     return True
 
@@ -467,7 +468,7 @@ def introduce():
     st.divider()
     # Use Cases
     with st.container():
-        col1, col2 = st.columns([5, 5])
+        col1, col2 = st.columns([5.5, 4.5])
         with col1:
             st.header('使用案例')
 

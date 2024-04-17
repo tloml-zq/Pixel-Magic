@@ -35,7 +35,11 @@
 
 ## 安装方法
 
-用户可以通过[网站](https://pixel--magic.streamlit.app/)访问并使用像素魔法。
+1. 从[GitHub仓库](https://github.com/tloml-zq/PixelMagic)上下载源码。
+2. pip安装requirements.txt文件中的依赖包。
+3. 在命令行通过streamlit运行项目的主文件mainweb.py即可。
+
+或着可以通过[网站](https://pixel--magic.streamlit.app/)访问并使用像素魔法。
 
 ## 使用说明
 
