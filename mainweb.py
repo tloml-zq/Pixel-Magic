@@ -19,7 +19,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-@st.cache_data
+
 def load_lottiefile(filepath: str):
     with open(filepath,"r") as f:
         return json.load(f)
