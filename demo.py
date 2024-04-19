@@ -63,7 +63,7 @@ def initialize_session_state():
     return SessionState()
 
 
-@st.cache_data
+
 def load_lottiefile(filepath: str):
     with open(filepath,"r") as f:
         return json.load(f)
