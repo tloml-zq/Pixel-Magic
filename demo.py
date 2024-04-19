@@ -465,7 +465,8 @@ def introduce():
         '<div class="subtitle-font" style="text-align: right;">一种全新的图像恢复和图像超分辨率模型性能评估工具</div>',
         unsafe_allow_html=True)
 
-    st.divider()
+    #st.divider()
+    st.markdown('---')
     # Use Cases
     with st.container():
         col1, col2 = st.columns([5.5, 4.5])
