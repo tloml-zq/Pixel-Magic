@@ -440,6 +440,7 @@ def intorduce():
     # Header
     st.title('Welcome to PixelMagic! 👋')
     st.subheader('*A new super-resolution image restoration and model performance evaluation tool.*')
+    st.markdown('---')
     #st.markdown('---')
     #st.divider()  # 一个*为斜体，两个不是
     # Use Cases
